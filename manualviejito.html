@@ -1,0 +1,1785 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manual de Instalación – Presupuesto App</title>
+
+  <!-- ============================================================
+       ESTILOS GENERALES
+       ============================================================ -->
+  <style>
+    /* ---- Variables de color ---- */
+    :root {
+      --bg:        #F6F8F7;
+      --white:     #FFFFFF;
+      --green:     #A8CBB7;
+      --green-dk:  #6eab88;
+      --blue:      #7895A6;
+      --blue-dk:   #4e6e80;
+      --beige:     #E8DED1;
+      --beige-dk:  #d0c4b0;
+      --text:      #263238;
+      --text-sec:  #5F6F73;
+      --code-bg:   #1e2d35;
+      --code-text: #c8dce6;
+      --alert-bg:  #edf5f0;
+      --alert-bd:  #A8CBB7;
+      --sidebar-w: 260px;
+    }
+
+    /* ---- Reset y base ---- */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    /* ============================================================
+       BARRA DE PROGRESO SUPERIOR
+       ============================================================ */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: var(--green-dk);
+      z-index: 1000;
+      transition: width 0.1s linear;
+    }
+
+    /* ============================================================
+       ENCABEZADO PRINCIPAL
+       ============================================================ */
+    header {
+      background: var(--white);
+      border-bottom: 2px solid var(--beige);
+      padding: 2rem 2.5rem 1.5rem;
+      position: sticky;
+      top: 3px;
+      z-index: 900;
+    }
+
+    .header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .header-title h1 {
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    .header-title p {
+      font-size: 0.85rem;
+      color: var(--text-sec);
+      margin-top: 0.2rem;
+    }
+
+    .header-badges {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      background: var(--beige);
+      color: var(--text-sec);
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      letter-spacing: 0.02em;
+    }
+
+    .badge.green  { background: var(--green);  color: #1e4030; }
+    .badge.blue   { background: var(--blue);   color: #fff; }
+
+    /* ============================================================
+       LAYOUT PRINCIPAL: SIDEBAR + CONTENIDO
+       ============================================================ */
+    .layout {
+      display: flex;
+      max-width: 1260px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+      gap: 2rem;
+    }
+
+    /* ---- SIDEBAR ---- */
+    .sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      position: sticky;
+      top: 90px;
+      align-self: flex-start;
+      max-height: calc(100vh - 110px);
+      overflow-y: auto;
+      background: var(--white);
+      border: 1px solid var(--beige);
+      border-radius: 12px;
+      padding: 1.25rem 0;
+    }
+
+    .sidebar-search {
+      padding: 0 1rem 0.75rem;
+      border-bottom: 1px solid var(--beige);
+      margin-bottom: 0.5rem;
+    }
+
+    .sidebar-search input {
+      width: 100%;
+      padding: 0.45rem 0.75rem;
+      border: 1px solid var(--beige-dk);
+      border-radius: 8px;
+      font-size: 0.82rem;
+      color: var(--text);
+      background: var(--bg);
+      outline: none;
+    }
+
+    .sidebar-search input:focus { border-color: var(--blue); }
+
+    .sidebar nav ul { list-style: none; }
+
+    .sidebar nav ul li a {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.45rem 1.2rem;
+      font-size: 0.83rem;
+      color: var(--text-sec);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: all 0.18s;
+    }
+
+    .sidebar nav ul li a:hover {
+      background: var(--bg);
+      color: var(--text);
+      border-left-color: var(--green);
+    }
+
+    .sidebar nav ul li a.active {
+      background: var(--alert-bg);
+      color: var(--text);
+      font-weight: 600;
+      border-left-color: var(--green-dk);
+    }
+
+    .nav-num {
+      font-size: 0.7rem;
+      background: var(--beige);
+      color: var(--text-sec);
+      border-radius: 4px;
+      padding: 0.1rem 0.35rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* ---- CONTENIDO ---- */
+    .content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    /* ============================================================
+       SECCIONES
+       ============================================================ */
+    .section {
+      background: var(--white);
+      border: 1px solid var(--beige);
+      border-radius: 14px;
+      padding: 2rem 2.2rem;
+      margin-bottom: 2rem;
+      scroll-margin-top: 90px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--beige);
+    }
+
+    .section-num {
+      background: var(--green);
+      color: #1a3829;
+      font-weight: 700;
+      font-size: 0.78rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+
+    .section h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .section h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin: 1.5rem 0 0.6rem;
+    }
+
+    .section p { margin-bottom: 0.75rem; color: var(--text); }
+
+    /* ============================================================
+       BLOQUES DE CODIGO
+       ============================================================ */
+    .code-block {
+      position: relative;
+      background: var(--code-bg);
+      border-radius: 10px;
+      margin: 0.75rem 0 1rem;
+      overflow: hidden;
+    }
+
+    .code-block pre {
+      padding: 1rem 1.2rem;
+      overflow-x: auto;
+      font-family: "Cascadia Code", "Fira Code", "Consolas", monospace;
+      font-size: 0.82rem;
+      color: var(--code-text);
+      line-height: 1.6;
+      white-space: pre;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      background: rgba(168, 203, 183, 0.18);
+      border: 1px solid rgba(168, 203, 183, 0.35);
+      color: var(--green);
+      font-size: 0.72rem;
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.18s;
+    }
+
+    .copy-btn:hover { background: rgba(168, 203, 183, 0.35); }
+    .copy-btn.copied { color: #7fd1a0; border-color: #7fd1a0; }
+
+    /* ============================================================
+       ALERTAS
+       ============================================================ */
+    .alert {
+      background: var(--alert-bg);
+      border-left: 4px solid var(--alert-bd);
+      border-radius: 0 8px 8px 0;
+      padding: 0.85rem 1.1rem;
+      margin: 0.75rem 0 1rem;
+      font-size: 0.88rem;
+      color: #2d5040;
+    }
+
+    .alert strong { color: #1e4030; }
+
+    .alert.warn {
+      background: #fffbec;
+      border-color: #e8c94a;
+      color: #5a4a00;
+    }
+
+    /* ============================================================
+       TARJETAS DE HARDWARE
+       ============================================================ */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+
+    .hw-card {
+      background: var(--bg);
+      border: 1px solid var(--beige-dk);
+      border-radius: 10px;
+      padding: 1rem 1.1rem;
+    }
+
+    .hw-card .hw-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-sec);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.3rem;
+    }
+
+    .hw-card .hw-value {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* ============================================================
+       TABLA ESTILIZADA
+       ============================================================ */
+    .styled-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      margin: 0.75rem 0 1rem;
+    }
+
+    .styled-table thead tr {
+      background: var(--beige);
+    }
+
+    .styled-table th {
+      padding: 0.65rem 0.85rem;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.8rem;
+      color: var(--text-sec);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .styled-table td {
+      padding: 0.6rem 0.85rem;
+      border-bottom: 1px solid var(--beige);
+      color: var(--text);
+    }
+
+    .styled-table tbody tr:hover { background: var(--bg); }
+
+    .styled-table code {
+      background: var(--beige);
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-family: "Cascadia Code", "Consolas", monospace;
+    }
+
+    /* ============================================================
+       TIMELINE DE PASOS
+       ============================================================ */
+    .timeline {
+      position: relative;
+      padding-left: 2.5rem;
+      margin: 1rem 0;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0.75rem;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--green);
+      border-radius: 2px;
+    }
+
+    .tl-step {
+      position: relative;
+      margin-bottom: 1.25rem;
+    }
+
+    .tl-step::before {
+      content: attr(data-num);
+      position: absolute;
+      left: -2.5rem;
+      top: 0;
+      width: 1.5rem;
+      height: 1.5rem;
+      background: var(--green-dk);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .tl-step h4 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.2rem;
+    }
+
+    .tl-step p {
+      font-size: 0.87rem;
+      color: var(--text-sec);
+      margin: 0;
+    }
+
+    /* ============================================================
+       CHECKLIST INTERACTIVO
+       ============================================================ */
+    .checklist { list-style: none; margin: 0.75rem 0; }
+
+    .checklist li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.55rem 0.75rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s;
+      font-size: 0.9rem;
+    }
+
+    .checklist li:hover { background: var(--bg); }
+
+    .checklist li.done { color: var(--text-sec); text-decoration: line-through; }
+
+    .check-box {
+      width: 1.15rem;
+      height: 1.15rem;
+      border: 2px solid var(--beige-dk);
+      border-radius: 4px;
+      flex-shrink: 0;
+      margin-top: 0.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      background: var(--white);
+    }
+
+    .checklist li.done .check-box {
+      background: var(--green-dk);
+      border-color: var(--green-dk);
+    }
+
+    .check-box svg { display: none; }
+    .checklist li.done .check-box svg { display: block; }
+
+    .checklist-progress {
+      font-size: 0.82rem;
+      color: var(--text-sec);
+      margin-bottom: 0.5rem;
+    }
+
+    .checklist-bar {
+      height: 5px;
+      background: var(--beige-dk);
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+
+    .checklist-bar-fill {
+      height: 100%;
+      background: var(--green-dk);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+
+    /* ============================================================
+       ACORDEONES (PROBLEMAS COMUNES)
+       ============================================================ */
+    .accordion-search {
+      margin-bottom: 1rem;
+    }
+
+    .accordion-search input {
+      width: 100%;
+      padding: 0.55rem 1rem;
+      border: 1px solid var(--beige-dk);
+      border-radius: 8px;
+      font-size: 0.88rem;
+      color: var(--text);
+      background: var(--bg);
+      outline: none;
+    }
+
+    .accordion-search input:focus { border-color: var(--blue); }
+
+    .accordion-item {
+      border: 1px solid var(--beige-dk);
+      border-radius: 10px;
+      margin-bottom: 0.6rem;
+      overflow: hidden;
+    }
+
+    .accordion-item[data-hidden="true"] { display: none; }
+
+    .accordion-toggle {
+      width: 100%;
+      background: var(--bg);
+      border: none;
+      padding: 0.85rem 1.1rem;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text);
+      transition: background 0.18s;
+    }
+
+    .accordion-toggle:hover { background: var(--beige); }
+
+    .accordion-icon {
+      margin-left: auto;
+      width: 1.1rem;
+      height: 1.1rem;
+      flex-shrink: 0;
+      transition: transform 0.25s;
+      color: var(--text-sec);
+    }
+
+    .accordion-item.open .accordion-icon { transform: rotate(180deg); }
+
+    .err-badge {
+      font-size: 0.7rem;
+      background: var(--beige);
+      color: var(--text-sec);
+      border-radius: 4px;
+      padding: 0.1rem 0.5rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .accordion-body {
+      display: none;
+      padding: 1rem 1.2rem;
+      border-top: 1px solid var(--beige);
+      font-size: 0.88rem;
+    }
+
+    .accordion-item.open .accordion-body { display: block; }
+
+    .accordion-body .cause {
+      font-size: 0.83rem;
+      color: var(--text-sec);
+      margin-bottom: 0.5rem;
+    }
+
+    .accordion-body ol {
+      padding-left: 1.2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .accordion-body ol li { margin-bottom: 0.3rem; }
+
+    /* ============================================================
+       LISTAS GENERALES
+       ============================================================ */
+    .content ul, .content ol {
+      padding-left: 1.4rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .content li { margin-bottom: 0.3rem; font-size: 0.9rem; }
+
+    /* ============================================================
+       BOTON VOLVER ARRIBA
+       ============================================================ */
+    #back-top {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--blue-dk);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 2.5rem;
+      height: 2.5rem;
+      cursor: pointer;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.18);
+      z-index: 800;
+    }
+
+    #back-top.visible { opacity: 1; pointer-events: auto; }
+
+    /* ============================================================
+       PORCENTAJE DE PROGRESO DE CHECKLIST
+       ============================================================ */
+    .cl-summary {
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      background: var(--bg);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: var(--text-sec);
+      text-align: center;
+    }
+
+    /* ============================================================
+       DISTRIBUCION
+       ============================================================ */
+    .dist-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+
+    .dist-card {
+      border: 1px solid var(--beige-dk);
+      border-radius: 10px;
+      padding: 1.2rem 1.3rem;
+      background: var(--bg);
+    }
+
+    .dist-card h4 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.6rem;
+    }
+
+    .dist-card p {
+      font-size: 0.85rem;
+      color: var(--text-sec);
+      margin-bottom: 0.5rem;
+    }
+
+    /* ============================================================
+       RESPONSIVE
+       ============================================================ */
+    @media (max-width: 900px) {
+      .layout {
+        flex-direction: column;
+        padding: 1rem;
+      }
+
+      .sidebar {
+        width: 100%;
+        position: static;
+        max-height: none;
+        border-radius: 10px;
+      }
+
+      .sidebar nav ul {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+        padding: 0 0.75rem 0.75rem;
+      }
+
+      .sidebar nav ul li a {
+        border-left: none;
+        border-bottom: 2px solid transparent;
+        border-radius: 6px;
+        padding: 0.35rem 0.65rem;
+        font-size: 0.8rem;
+        white-space: nowrap;
+      }
+
+      .sidebar nav ul li a.active {
+        border-bottom-color: var(--green-dk);
+        border-left-color: transparent;
+      }
+
+      .sidebar-search { display: none; }
+
+      .cards-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 600px) {
+      header { padding: 1.2rem 1rem 1rem; }
+      .section { padding: 1.25rem 1.1rem; }
+      .cards-grid { grid-template-columns: 1fr; }
+      .dist-cards { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ============================================================
+       BARRA DE PROGRESO DE LECTURA
+       ============================================================ -->
+  <div id="progress-bar"></div>
+
+  <!-- ============================================================
+       ENCABEZADO PRINCIPAL
+       ============================================================ -->
+  <header>
+    <div class="header-inner">
+      <div class="header-title">
+        <h1>Manual de Instalación</h1>
+        <p>Guía completa para configurar y ejecutar el proyecto en un entorno local</p>
+      </div>
+      <div class="header-badges">
+        <span class="badge green">Presupuesto App</span>
+        <span class="badge blue">Flutter / Dart</span>
+        <span class="badge">Versión 1.0</span>
+        <span class="badge">Mayo 2026</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       LAYOUT: SIDEBAR + CONTENIDO
+       ============================================================ -->
+  <div class="layout">
+
+    <!-- ---- SIDEBAR DE NAVEGACIÓN ---- -->
+    <aside class="sidebar">
+      <div class="sidebar-search">
+        <input type="text" id="nav-search" placeholder="Buscar sección..." aria-label="Buscar sección" />
+      </div>
+      <nav aria-label="Navegación de secciones">
+        <ul id="nav-list">
+          <li><a href="#introduccion"  class="nav-link"><span class="nav-num">01</span>Introducción</a></li>
+          <li><a href="#requisitos"    class="nav-link"><span class="nav-num">02</span>Requisitos</a></li>
+          <li><a href="#dependencias"  class="nav-link"><span class="nav-num">03</span>Instalación de dependencias</a></li>
+          <li><a href="#entorno"       class="nav-link"><span class="nav-num">04</span>Configuración del entorno</a></li>
+          <li><a href="#clonacion"     class="nav-link"><span class="nav-num">05</span>Clonación del proyecto</a></li>
+          <li><a href="#instalacion"   class="nav-link"><span class="nav-num">06</span>Instalación del proyecto</a></li>
+          <li><a href="#hive"          class="nav-link"><span class="nav-num">07</span>Base de datos Hive</a></li>
+          <li><a href="#ejecucion"     class="nav-link"><span class="nav-num">08</span>Ejecución</a></li>
+          <li><a href="#verificacion"  class="nav-link"><span class="nav-num">09</span>Verificación</a></li>
+          <li><a href="#problemas"     class="nav-link"><span class="nav-num">10</span>Problemas comunes</a></li>
+          <li><a href="#despliegue"    class="nav-link"><span class="nav-num">11</span>Despliegue</a></li>
+          <li><a href="#desinstalacion"class="nav-link"><span class="nav-num">12</span>Desinstalación</a></li>
+          <li><a href="#conclusion"    class="nav-link"><span class="nav-num">13</span>Conclusión</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- ---- ÁREA DE CONTENIDO ---- -->
+    <main class="content">
+
+      <!-- ======================================================
+           SECCIÓN 1: INTRODUCCIÓN
+           ====================================================== -->
+      <section class="section" id="introduccion">
+        <div class="section-header">
+          <span class="section-num">01</span>
+          <h2>Introducción</h2>
+        </div>
+
+        <h3>Objetivo del manual</h3>
+        <p>
+          Este manual describe de forma detallada y ordenada el proceso completo para instalar,
+          configurar y ejecutar la aplicación <strong>Presupuesto App</strong> en un entorno de
+          desarrollo local. El objetivo es permitir que cualquier desarrollador o técnico con
+          conocimientos básicos en Flutter pueda poner en funcionamiento el sistema en su máquina.
+        </p>
+
+        <h3>Alcance</h3>
+        <ul>
+          <li>Instalación de todas las herramientas necesarias (Flutter SDK, Dart, Android Studio o VS Code).</li>
+          <li>Clonación y configuración del proyecto.</li>
+          <li>Instalación de dependencias.</li>
+          <li>Generación de código automático con <code>build_runner</code>.</li>
+          <li>Ejecución del sistema en un emulador o dispositivo físico.</li>
+          <li>Verificación de que la instalación funciona correctamente.</li>
+          <li>Solución a los problemas más comunes durante la instalación.</li>
+        </ul>
+
+        <div class="alert warn">
+          <strong>Fuera del alcance:</strong> Este manual no cubre el despliegue en tiendas de
+          aplicaciones (Google Play, App Store) ni la configuración de servidores.
+        </div>
+
+        <h3>Público objetivo</h3>
+        <ul>
+          <li>Desarrolladores Flutter con nivel básico o intermedio.</li>
+          <li>Técnicos responsables de instalar o mantener el sistema.</li>
+          <li>Estudiantes que necesiten ejecutar el proyecto en su máquina local.</li>
+        </ul>
+      </section>
+
+      <!-- ======================================================
+           SECCIÓN 2: REQUISITOS
+           ====================================================== -->
+      <section class="section" id="requisitos">
+        <div class="section-header">
+          <span class="section-num">02</span>
+          <h2>Requisitos del sistema</h2>
+        </div>
+
+        <h3>Requisitos de hardware</h3>
+        <div class="cards-grid">
+          <div class="hw-card">
+            <div class="hw-label">RAM</div>
+            <div class="hw-value">8 GB mínimo<br><small style="font-weight:400;font-size:0.8rem;color:var(--text-sec)">16 GB recomendado para emulador</small></div>
+          </div>
+          <div class="hw-card">
+            <div class="hw-label">Procesador</div>
+            <div class="hw-value">Intel Core i5 8a gen<br><small style="font-weight:400;font-size:0.8rem;color:var(--text-sec)">o equivalente AMD</small></div>
+          </div>
+          <div class="hw-card">
+            <div class="hw-label">Disco libre</div>
+            <div class="hw-value">10 GB mínimo<br><small style="font-weight:400;font-size:0.8rem;color:var(--text-sec)">Flutter SDK + Android SDK + proyecto</small></div>
+          </div>
+          <div class="hw-card">
+            <div class="hw-label">Sistema operativo</div>
+            <div class="hw-value">Windows 10/11 64 bits<br><small style="font-weight:400;font-size:0.8rem;color:var(--text-sec)">macOS 12+ · Ubuntu 20.04+</small></div>
+          </div>
+        </div>
+
+        <div class="alert">
+          <strong>Nota:</strong> Si se utiliza un dispositivo físico Android o iOS conectado por USB,
+          el requisito de RAM baja a 8 GB ya que no se necesita emulador.
+        </div>
+
+        <h3>Requisitos de software</h3>
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Software</th>
+              <th>Versión mínima</th>
+              <th>Descripción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Flutter SDK</td><td><code>3.19.0</code></td><td>Framework principal de desarrollo multiplataforma</td></tr>
+            <tr><td>Dart SDK</td><td><code>3.7.2</code></td><td>Incluido con Flutter SDK; lenguaje del proyecto</td></tr>
+            <tr><td>Android Studio</td><td><code>2023.1</code></td><td>IDE recomendado; incluye Android SDK y emulador</td></tr>
+            <tr><td>VS Code <em>(alternativo)</em></td><td><code>1.85</code></td><td>Editor ligero con extensión Flutter</td></tr>
+            <tr><td>Git</td><td><code>2.40</code></td><td>Control de versiones; necesario para clonar el repositorio</td></tr>
+            <tr><td>Android SDK</td><td><code>API 21+</code></td><td>Requerido para compilar y ejecutar en Android</td></tr>
+            <tr><td>Java JDK</td><td><code>17+</code></td><td>Requerido por el toolchain de Android</td></tr>
+          </tbody>
+        </table>
+
+        <div class="alert">
+          <strong>Nota:</strong> No se requiere base de datos externa, servidor web ni archivo
+          <code>.env</code>. La aplicación es completamente offline y almacena sus datos en la
+          base de datos local Hive, embebida dentro del dispositivo.
+        </div>
+      </section>
+
+      <!-- ======================================================
+           SECCIÓN 3: INSTALACIÓN DE DEPENDENCIAS
+           ====================================================== -->
+      <section class="section" id="dependencias">
+        <div class="section-header">
+          <span class="section-num">03</span>
+          <h2>Instalación de dependencias</h2>
+        </div>
+
+        <!-- Flutter SDK -->
+        <h3>3.1 Instalar Flutter SDK</h3>
+        <ol>
+          <li>Acceder a la página oficial de Flutter: <strong>https://docs.flutter.dev/get-started/install</strong></li>
+          <li>Seleccionar el sistema operativo correspondiente (Windows, macOS o Linux).</li>
+          <li>Descargar el archivo comprimido del SDK.</li>
+          <li>Extraer el contenido en una ruta <strong>sin espacios ni caracteres especiales</strong>.</li>
+        </ol>
+        <p>Ejemplo de ruta en Windows:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+          <pre>C:\desarrollo\flutter</pre>
+        </div>
+
+        <p>Agregar <code>flutter\bin</code> a la variable de entorno <strong>PATH</strong>. En Windows (PowerShell como administrador):</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+          <pre>[System.Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\desarrollo\flutter\bin", "Machine")</pre>
+        </div>
+
+        <p>Verificar la instalación:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+          <pre>flutter --version</pre>
+        </div>
+        <p>La salida debe mostrar la versión de Flutter y Dart instaladas.</p>
+
+        <!-- Android Studio -->
+        <h3>3.2 Instalar Android Studio</h3>
+        <ol>
+          <li>Descargar Android Studio desde: <strong>https://developer.android.com/studio</strong></li>
+          <li>Ejecutar el instalador y seguir los pasos del asistente.</li>
+          <li>Durante la instalación, asegurarse de marcar las siguientes opciones:
+            <ul style="margin-top:0.3rem">
+              <li>Android SDK</li>
+              <li>Android SDK Platform</li>
+              <li>Android Virtual Device (AVD)</li>
+            </ul>
+          </li>
+          <li>Al finalizar, abrir Android Studio y completar la configuración inicial del SDK.</li>
+        </ol>
+
+        <!-- Flutter con Android Studio -->
+        <h3>3.3 Configurar Flutter con Android Studio</h3>
+        <p>En la terminal, ejecutar el diagnóstico de Flutter para identificar dependencias faltantes:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+          <pre>flutter doctor</pre>
+        </div>
+
+        <p>Los elementos más comunes que requieren acción:</p>
+        <p><strong>Aceptar las licencias de Android:</strong></p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+          <pre>flutter doctor --android-licenses</pre>
+        </div>
+        <p>Instalar el plugin de Flutter en Android Studio desde el menú <strong>Plugins</strong>.</p>
+
+        <!-- Git -->
+        <h3>3.4 Instalar Git</h3>
+        <ol>
+          <li>Descargar Git desde: <strong>https://git-scm.com/downloads</strong></li>
+          <li>Ejecutar el instalador con la configuración por defecto.</li>
+          <li>Verificar la instalación:</li>
+        </ol>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+          <pre>git --version</pre>
+        </div>
+      </section>
+
+      <!-- ======================================================
+           SECCIÓN 4: CONFIGURACIÓN DEL ENTORNO
+           ====================================================== -->
+      <section class="section" id="entorno">
+        <div class="section-header">
+          <span class="section-num">04</span>
+          <h2>Configuración del entorno</h2>
+        </div>
+
+        <p>
+          La aplicación <strong>no utiliza variables de entorno ni archivos <code>.env</code></strong>.
+          Toda la configuración está embebida en el código fuente y no requiere ajustes previos al primer uso.
+        </p>
+        <p>
+          Los parámetros de comportamiento que podrían requerir ajuste están definidos directamente
+          en el código fuente. Para modificar cualquiera de estos valores, editar el archivo indicado
+          antes de compilar la aplicación:
+        </p>
+
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>Parámetro</th>
+              <th>Archivo fuente</th>
+              <th>Valor actual</th>
+              <th>Descripción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>IVA_RATE</code></td>
+              <td><code>lib/services/calculadora_finanzas.dart</code></td>
+              <td><code>0.16</code></td>
+              <td>Tasa de IVA aplicada al presupuesto (16%)</td>
+            </tr>
+            <tr>
+              <td><code>Imprevistos</code></td>
+              <td><code>lib/services/calculadora_finanzas.dart</code></td>
+              <td><code>0.05</code></td>
+              <td>Porcentaje de imprevistos por defecto (5%)</td>
+            </tr>
+            <tr>
+              <td><code>Utilidad</code></td>
+              <td><code>lib/services/calculadora_finanzas.dart</code></td>
+              <td><code>0.20</code></td>
+              <td>Porcentaje de utilidad por defecto (20%)</td>
+            </tr>
+            <tr>
+              <td><code>aplicarIVA</code></td>
+              <td><code>lib/services/calculadora_finanzas.dart</code></td>
+              <td><code>true</code></td>
+              <td>Si el IVA se aplica por defecto al crear presupuesto</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ======================================================
+           SECCIÓN 5: CLONACIÓN DEL PROYECTO
+           ====================================================== -->
+      <section class="section" id="clonacion">
+        <div class="section-header">
+          <span class="section-num">05</span>
+          <h2>Clonación del proyecto</h2>
+        </div>
+
+        <p>Abrir una terminal en el directorio donde se desea guardar el proyecto y ejecutar:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+          <pre>git clone [URL_DEL_REPOSITORIO]
+cd presupuesto_app</pre>
+        </div>
+
+        <div class="alert">
+          <strong>Nota:</strong> Reemplazar <code>[URL_DEL_REPOSITORIO]</code> con la URL real del
+          repositorio Git del proyecto. Este dato debe ser proporcionado por el responsable del proyecto.
+        </div>
+
+        <p>Verificar que la clonación fue exitosa listando el contenido del directorio:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+          <pre># En Windows (PowerShell)
+dir
+
+# En macOS / Linux
+ls -la</pre>
+        </div>
+        <p>Se deben visualizar archivos como <code>pubspec.yaml</code>, <code>lib/</code>, <code>android/</code>, <code>ios/</code>, entre otros.</p>
+      </section>
+
+      <!-- ======================================================
+           SECCIÓN 6: INSTALACIÓN DEL PROYECTO
+           ====================================================== -->
+      <section class="section" id="instalacion">
+        <div class="section-header">
+          <span class="section-num">06</span>
+          <h2>Instalación del proyecto</h2>
+        </div>
+
+        <h3>6.1 Instalar dependencias de Flutter</h3>
+        <p>Desde la raíz del proyecto (<code>presupuesto_app/</code>), ejecutar:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+          <pre>flutter pub get</pre>
+        </div>
+        <p>Este comando descarga e instala todos los paquetes declarados en <code>pubspec.yaml</code>. La salida esperada al finalizar es:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+          <pre>Got dependencies!</pre>
+        </div>
+
+        <p>Paquetes principales del proyecto:</p>
+        <table class="styled-table">
+          <thead>
+            <tr><th>Paquete</th><th>Versión</th><th>Propósito</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>hive</code></td><td><code>^2.2.3</code></td><td>Base de datos NoSQL local embebida</td></tr>
+            <tr><td><code>hive_flutter</code></td><td><code>^1.1.0</code></td><td>Integración de Hive con Flutter</td></tr>
+            <tr><td><code>pdf</code></td><td><code>^3.10.8</code></td><td>Generación de documentos PDF</td></tr>
+            <tr><td><code>printing</code></td><td><code>^5.12.0</code></td><td>Vista previa e impresión de PDF</td></tr>
+            <tr><td><code>image_picker</code></td><td><code>^1.2.1</code></td><td>Selección de imágenes desde galería o cámara</td></tr>
+            <tr><td><code>path_provider</code></td><td><code>^2.1.5</code></td><td>Acceso a rutas del sistema de archivos del dispositivo</td></tr>
+            <tr><td><code>cupertino_icons</code></td><td><code>^1.0.8</code></td><td>Iconos estilo iOS</td></tr>
+          </tbody>
+        </table>
+
+        <h3>6.2 Generar código automático con build_runner</h3>
+        <p>
+          El proyecto utiliza <code>hive_generator</code> para generar adaptadores de tipo
+          (archivos <code>.g.dart</code>) que Hive necesita para serializar y deserializar los modelos.
+          <strong>Este paso es obligatorio antes de compilar.</strong>
+        </p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+          <pre>dart run build_runner build --delete-conflicting-outputs</pre>
+        </div>
+
+        <p>La salida esperada al finalizar es similar a:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+          <pre>[INFO] Succeeded after Xs with Y outputs (Z actions)</pre>
+        </div>
+
+        <p>Archivos generados por <code>build_runner</code>:</p>
+        <table class="styled-table">
+          <thead>
+            <tr><th>Archivo generado</th><th>Modelo que adapta</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>lib/models/presupuesto/material.g.dart</code></td><td>MaterialPresupuesto</td></tr>
+            <tr><td><code>lib/models/presupuesto/mano_obra.g.dart</code></td><td>ManoObra, TipoPago</td></tr>
+            <tr><td><code>lib/models/presupuesto/equipo.g.dart</code></td><td>Equipo</td></tr>
+            <tr><td><code>lib/models/presupuesto/finanzas.g.dart</code></td><td>Finanzas</td></tr>
+            <tr><td><code>lib/models/presupuesto/presupuesto.g.dart</code></td><td>Presupuesto, EstadoPresupuesto</td></tr>
+            <tr><td><code>lib/models/presupuesto/material_catalogo.g.dart</code></td><td>MaterialCatalogo</td></tr>
+            <tr><td><code>lib/models/proyectos/proyecto.g.dart</code></td><td>Proyecto</td></tr>
+            <tr><td><code>lib/models/proyectos/estado_proyecto.g.dart</code></td><td>EstadoProyecto</td></tr>
+          </tbody>
+        </table>
+
+        <div class="alert warn">
+          <strong>Importante:</strong> Los archivos <code>.g.dart</code> no deben editarse manualmente.
+          Son generados automáticamente a partir de las anotaciones <code>@HiveType</code> y <code>@HiveField</code>.
+        </div>
+      </section>
+
+      <!-- ======================================================
+           SECCIÓN 7: BASE DE DATOS HIVE
+           ====================================================== -->
+      <section class="section" id="hive">
+        <div class="section-header">
+          <span class="section-num">07</span>
+          <h2>Base de datos Hive</h2>
+        </div>
+
+        <p>
+          La aplicación no requiere instalación ni configuración de una base de datos externa.
+          Utiliza <strong>Hive</strong>, una base de datos NoSQL ligera y embebida que se almacena
+          directamente en el sistema de archivos del dispositivo o emulador.
+        </p>
+
+        <h3>7.1 Inicialización automática</h3>
+        <p>La base de datos se inicializa automáticamente en el primer arranque a través de <code>lib/main.dart</code>:</p>
+        <ol>
+          <li>Inicializa Hive con <code>Hive.initFlutter()</code>.</li>
+          <li>Registra los 10 adaptadores de tipo (typeIds del 0 al 9).</li>
+          <li>Abre las cajas (colecciones) de datos:
+            <ul style="margin-top:0.3rem">
+              <li><code>proyectos</code> — almacena objetos de tipo <code>Proyecto</code></li>
+              <li><code>presupuestos</code> — almacena objetos de tipo <code>Presupuesto</code></li>
+              <li><code>materiales_catalogo</code> — gestionada por <code>MaterialesService</code></li>
+            </ul>
+          </li>
+          <li>Carga el catálogo inicial de <strong>18 materiales</strong> si la caja está vacía (seed data automático).</li>
+        </ol>
+
+        <div class="alert">
+          No se requiere ejecutar ningún comando SQL ni migración manual.
+        </div>
+
+        <h3>7.2 Ubicación física de los datos</h3>
+        <p>Hive guarda los datos en archivos <code>.hive</code> dentro del directorio de datos de la aplicación:</p>
+        <ul>
+          <li><strong>Android (emulador):</strong> <code>/data/data/com.example.presupuesto_app/app_flutter/</code></li>
+          <li><strong>Windows (escritorio):</strong> <code>%APPDATA%\presupuesto_app\</code></li>
+        </ul>
+        <p style="font-size:0.87rem;color:var(--text-sec)">No es necesario conocer esta ruta para el uso normal del sistema.</p>
+      </section>
+
+      <!-- ======================================================
+           SECCIÓN 8: EJECUCIÓN
+           ====================================================== -->
+      <section class="section" id="ejecucion">
+        <div class="section-header">
+          <span class="section-num">08</span>
+          <h2>Ejecución del sistema</h2>
+        </div>
+
+        <h3>8.1 Verificar dispositivos disponibles</h3>
+        <p>Antes de ejecutar, confirmar que hay un dispositivo o emulador disponible:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+          <pre>flutter devices</pre>
+        </div>
+
+        <p>La salida mostrará los dispositivos conectados. Ejemplo:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+          <pre>2 connected devices:
+
+sdk gphone64 x86 64 (mobile) • emulator-5554 • android-x64 • Android 14 (API 34)
+Windows (desktop)             • windows       • windows-x64 • Windows 11</pre>
+        </div>
+
+        <div class="alert">
+          Si no hay emulador iniciado, abrirlo desde Android Studio en <strong>Device Manager &gt; Play</strong>.
+        </div>
+
+        <h3>8.2 Ejecutar la aplicación</h3>
+        <p>Desde la raíz del proyecto, ejecutar:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+          <pre>flutter run</pre>
+        </div>
+
+        <p>Si hay más de un dispositivo disponible, especificar el objetivo:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+          <pre># Ejecutar en emulador Android
+flutter run -d emulator-5554
+
+# Ejecutar en Windows escritorio
+flutter run -d windows
+
+# Ejecutar en navegador web
+flutter run -d chrome</pre>
+        </div>
+
+        <h3>8.3 Puntos de acceso por plataforma</h3>
+        <table class="styled-table">
+          <thead>
+            <tr><th>Plataforma</th><th>Punto de acceso</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Android</td><td>Se abre directamente en el emulador o dispositivo físico</td></tr>
+            <tr><td>iOS</td><td>Se abre en el simulador de Xcode o dispositivo físico</td></tr>
+            <tr><td>Windows</td><td>Se abre como ventana nativa de escritorio</td></tr>
+            <tr><td>Web</td><td><code>http://localhost:PORT</code> (puerto asignado automáticamente)</td></tr>
+          </tbody>
+        </table>
+
+        <h3>8.4 Modo release (compilación de producción)</h3>
+        <p>Para compilar una versión optimizada sin modo debug:</p>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+          <pre># APK para Android
+flutter build apk --release
+
+# Aplicación Windows
+flutter build windows --release</pre>
+        </div>
+      </section>
+
+      <!-- ======================================================
+           SECCIÓN 9: VERIFICACIÓN
+           ====================================================== -->
+      <section class="section" id="verificacion">
+        <div class="section-header">
+          <span class="section-num">09</span>
+          <h2>Verificación de la instalación</h2>
+        </div>
+
+        <p>
+          Una vez que la aplicación inicia correctamente, realizar las siguientes comprobaciones
+          para confirmar que la instalación funciona bien.
+        </p>
+
+        <h3>Pruebas funcionales</h3>
+
+        <div style="margin-bottom:1rem">
+          <p><strong>Pantalla de splash:</strong> Al iniciar, debe aparecer una pantalla de bienvenida (SplashScreen) con el nombre de la aplicación. Confirma que Flutter carga correctamente.</p>
+          <p><strong>Pantalla principal (Home):</strong> Debe aparecer la pantalla principal con una barra de navegación inferior con tres secciones: Proyectos, Presupuestos y Materiales. Si la barra es visible y responde al toque, la interfaz es correcta.</p>
+          <p><strong>Catálogo de materiales (Hive):</strong> En la sección Materiales debe aparecer una lista con al menos 18 materiales precargados. Si la lista tiene contenido, Hive se inicializó correctamente.</p>
+          <p><strong>Proyecto de prueba:</strong> Ir a Proyectos, agregar un nuevo proyecto con el nombre "Proyecto de verificación" y confirmar que persiste al regresar a la pantalla.</p>
+        </div>
+
+        <h3>Checklist de verificación</h3>
+        <div class="checklist-progress" id="cl-text">Completado: 0 / 7</div>
+        <div class="checklist-bar"><div class="checklist-bar-fill" id="cl-bar" style="width:0%"></div></div>
+
+        <ul class="checklist" id="checklist">
+          <li onclick="toggleCheck(this)">
+            <span class="check-box"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span><code>flutter doctor</code> sin errores críticos — todos los checks en verde o amarillo aceptable</span>
+          </li>
+          <li onclick="toggleCheck(this)">
+            <span class="check-box"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span><code>flutter pub get</code> exitoso — salida: <em>Got dependencies!</em></span>
+          </li>
+          <li onclick="toggleCheck(this)">
+            <span class="check-box"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span><code>build_runner</code> sin errores — salida: <em>Succeeded after Xs</em></span>
+          </li>
+          <li onclick="toggleCheck(this)">
+            <span class="check-box"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span>Splash screen visible al iniciar — pantalla de bienvenida cargada correctamente</span>
+          </li>
+          <li onclick="toggleCheck(this)">
+            <span class="check-box"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span>Barra de navegación inferior visible — 3 secciones funcionales (Proyectos, Presupuestos, Materiales)</span>
+          </li>
+          <li onclick="toggleCheck(this)">
+            <span class="check-box"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span>Catálogo de materiales con datos precargados — 18 o más materiales visibles</span>
+          </li>
+          <li onclick="toggleCheck(this)">
+            <span class="check-box"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span>Proyecto de prueba guardado correctamente — persiste en la lista al navegar</span>
+          </li>
+        </ul>
+
+        <div class="cl-summary" id="cl-summary">Marca cada paso completado para registrar tu progreso.</div>
+      </section>
+
+      <!-- ======================================================
+           SECCIÓN 10: PROBLEMAS COMUNES
+           ====================================================== -->
+      <section class="section" id="problemas">
+        <div class="section-header">
+          <span class="section-num">10</span>
+          <h2>Problemas comunes y soluciones</h2>
+        </div>
+
+        <!-- Buscador de errores -->
+        <div class="accordion-search">
+          <input type="text" id="error-search" placeholder="Buscar error o mensaje..." aria-label="Buscar error" oninput="filterAccordions()" />
+        </div>
+
+        <div id="accordion-container">
+
+          <!-- Error 1 -->
+          <div class="accordion-item" data-keywords="flutter no se reconoce como comando path">
+            <button class="accordion-toggle" onclick="toggleAccordion(this)">
+              <span class="err-badge">11.1</span>
+              Error: <code>flutter</code> no se reconoce como comando
+              <svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="accordion-body">
+              <p class="cause"><strong>Causa:</strong> Flutter SDK no está agregado al PATH del sistema.</p>
+              <ol>
+                <li>Verificar que la ruta <code>flutter\bin</code> existe en el directorio donde se extrajo el SDK.</li>
+                <li>Agregar esa ruta al PATH del sistema.</li>
+                <li>Cerrar y volver a abrir la terminal.</li>
+                <li>Ejecutar <code>flutter --version</code> para confirmar.</li>
+              </ol>
+            </div>
+          </div>
+
+          <!-- Error 2 -->
+          <div class="accordion-item" data-keywords="android sdk no encontrado flutter doctor">
+            <button class="accordion-toggle" onclick="toggleAccordion(this)">
+              <span class="err-badge">11.2</span>
+              Error: <code>flutter doctor</code> reporta Android SDK no encontrado
+              <svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="accordion-body">
+              <p class="cause"><strong>Causa:</strong> Android Studio no terminó de instalar el Android SDK, o la ruta no está configurada.</p>
+              <ol>
+                <li>Abrir Android Studio.</li>
+                <li>Ir a <strong>Settings &gt; Appearance &amp; Behavior &gt; System Settings &gt; Android SDK</strong>.</li>
+                <li>Verificar que hay al menos una plataforma SDK instalada (API 21 o superior).</li>
+                <li>Copiar la ruta del SDK Location.</li>
+                <li>En la terminal, configurar la variable de entorno:</li>
+              </ol>
+              <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+                <pre>flutter config --android-sdk "RUTA_DEL_SDK"</pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Error 3 -->
+          <div class="accordion-item" data-keywords="licencias android not accepted">
+            <button class="accordion-toggle" onclick="toggleAccordion(this)">
+              <span class="err-badge">11.3</span>
+              Error: licencias de Android no aceptadas
+              <svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="accordion-body">
+              <p class="cause"><strong>Mensaje:</strong> <em>Some Android licenses not accepted.</em></p>
+              <p>Ejecutar y responder <strong>y</strong> en cada pregunta hasta que todas las licencias queden aceptadas:</p>
+              <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+                <pre>flutter doctor --android-licenses</pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Error 4 -->
+          <div class="accordion-item" data-keywords="flutter pub get falla conexion internet proxy">
+            <button class="accordion-toggle" onclick="toggleAccordion(this)">
+              <span class="err-badge">11.4</span>
+              Error: <code>flutter pub get</code> falla por falta de conexión
+              <svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="accordion-body">
+              <p class="cause"><strong>Causa:</strong> Sin acceso a internet no se pueden descargar los paquetes de pub.dev.</p>
+              <ol>
+                <li>Verificar la conexión a internet.</li>
+                <li>Si hay proxy corporativo, configurarlo:</li>
+              </ol>
+              <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+                <pre>set HTTPS_PROXY=http://usuario:password@proxy:puerto
+flutter pub get</pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Error 5 -->
+          <div class="accordion-item" data-keywords="build_runner conflictos g.dart desactualizados">
+            <button class="accordion-toggle" onclick="toggleAccordion(this)">
+              <span class="err-badge">11.5</span>
+              Error: <code>build_runner</code> genera conflictos
+              <svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="accordion-body">
+              <p class="cause"><strong>Mensaje:</strong> <em>Existing conflict between...</em> o archivos <code>.g.dart</code> desactualizados.</p>
+              <p>Usar la bandera <code>--delete-conflicting-outputs</code> para que el generador sobreescriba los archivos en conflicto:</p>
+              <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+                <pre>dart run build_runner build --delete-conflicting-outputs</pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Error 6 -->
+          <div class="accordion-item" data-keywords="no hay dispositivos no connected devices emulador avd">
+            <button class="accordion-toggle" onclick="toggleAccordion(this)">
+              <span class="err-badge">11.6</span>
+              Error: no hay dispositivos disponibles para ejecutar
+              <svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="accordion-body">
+              <p class="cause"><strong>Mensaje:</strong> <em>No connected devices. Attach your device or start an emulator.</em></p>
+              <ol>
+                <li><strong>Emulador Android:</strong> Abrir Android Studio &gt; Device Manager &gt; iniciar un AVD.</li>
+                <li><strong>Dispositivo físico Android:</strong> Activar Opciones de desarrollador y Depuración USB, luego conectarlo por USB.</li>
+                <li><strong>Windows escritorio:</strong> Habilitar la plataforma Windows:</li>
+              </ol>
+              <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+                <pre>flutter config --enable-windows-desktop</pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Error 7 -->
+          <div class="accordion-item" data-keywords="MissingPluginException image_picker camara galeria permisos">
+            <button class="accordion-toggle" onclick="toggleAccordion(this)">
+              <span class="err-badge">11.7</span>
+              Error: <code>MissingPluginException</code> en <code>image_picker</code>
+              <svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="accordion-body">
+              <p class="cause"><strong>Causa:</strong> El plugin image_picker requiere permisos de cámara/galería en Android que no están configurados.</p>
+              <p>Verificar que <code>android/app/src/main/AndroidManifest.xml</code> contiene:</p>
+              <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+                <pre>&lt;uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/&gt;
+&lt;uses-permission android:name="android.permission.CAMERA"/&gt;</pre>
+              </div>
+              <p>Si no están presentes, agregar esas líneas antes de la etiqueta <code>&lt;application&gt;</code>.</p>
+            </div>
+          </div>
+
+          <!-- Error 8 -->
+          <div class="accordion-item" data-keywords="HiveError Box not found adaptadores main.dart flutter clean">
+            <button class="accordion-toggle" onclick="toggleAccordion(this)">
+              <span class="err-badge">11.8</span>
+              Error: <code>HiveError: Box not found</code>
+              <svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="accordion-body">
+              <p class="cause"><strong>Causa:</strong> Se intenta acceder a una caja Hive antes de que sea abierta, o los adaptadores no están registrados.</p>
+              <ol>
+                <li>Asegurarse de que el paso <code>build_runner</code> se ejecutó correctamente y los archivos <code>.g.dart</code> existen.</li>
+                <li>No modificar el orden de inicialización en <code>lib/main.dart</code>.</li>
+                <li>Hacer un <code>flutter clean</code> y volver a ejecutar <code>flutter pub get</code> y <code>build_runner</code>.</li>
+              </ol>
+            </div>
+          </div>
+
+          <!-- Error 9 -->
+          <div class="accordion-item" data-keywords="puerto ocupado web port already in use chrome">
+            <button class="accordion-toggle" onclick="toggleAccordion(this)">
+              <span class="err-badge">11.9</span>
+              Error: puerto ocupado al ejecutar en web
+              <svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="accordion-body">
+              <p class="cause"><strong>Mensaje:</strong> <em>Port XXXX is already in use.</em></p>
+              <p>Especificar un puerto diferente:</p>
+              <div class="code-block">
+                <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+                <pre>flutter run -d chrome --web-port=8090</pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Error 10 -->
+          <div class="accordion-item" data-keywords="colorScheme background obsoleto deprecated advertencia warning">
+            <button class="accordion-toggle" onclick="toggleAccordion(this)">
+              <span class="err-badge">11.10</span>
+              Advertencia: <code>colorScheme.background</code> obsoleto
+              <svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="accordion-body">
+              <p class="cause"><strong>Mensaje:</strong> <em>'background' is deprecated and shouldn't be used.</em></p>
+              <p><strong>Causa:</strong> El proyecto usa una propiedad de ColorScheme que fue deprecada en versiones recientes de Flutter.</p>
+              <div class="alert" style="margin-top:0.5rem">
+                <strong>Impacto:</strong> Es solo una advertencia, no impide la compilación ni la ejecución. No requiere acción inmediata.
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /accordion-container -->
+      </section>
+
+      <!-- ======================================================
+           SECCIÓN 11: DESPLIEGUE
+           ====================================================== -->
+      <section class="section" id="despliegue">
+        <div class="section-header">
+          <span class="section-num">11</span>
+          <h2>Despliegue</h2>
+        </div>
+
+        <p>
+          La aplicación es una app móvil/escritorio nativa y no tiene componente web desplegable
+          en la nube. Las opciones de distribución son:
+        </p>
+
+        <div class="dist-cards">
+          <div class="dist-card">
+            <h4>Android — APK directo</h4>
+            <p>Genera un APK de release para instalar directamente en dispositivos sin pasar por Google Play.</p>
+            <div class="code-block">
+              <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+              <pre>flutter build apk --release</pre>
+            </div>
+            <p>Archivo generado en:</p>
+            <div class="code-block">
+              <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+              <pre>build/app/outputs/flutter-apk/app-release.apk</pre>
+            </div>
+            <p style="font-size:0.82rem;color:var(--text-sec)">Copiar al dispositivo e instalar con permisos de "Fuentes desconocidas" activados.</p>
+          </div>
+
+          <div class="dist-card">
+            <h4>Windows — ejecutable</h4>
+            <p>Genera un ejecutable nativo para Windows de 64 bits.</p>
+            <div class="code-block">
+              <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+              <pre>flutter build windows --release</pre>
+            </div>
+            <p>Ejecutable generado en:</p>
+            <div class="code-block">
+              <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+              <pre>build/windows/x64/runner/Release/presupuesto_app.exe</pre>
+            </div>
+            <p style="font-size:0.82rem;color:var(--text-sec)">Distribuir copiando toda la carpeta <code>Release/</code> al equipo de destino.</p>
+          </div>
+
+          <div class="dist-card">
+            <h4>Google Play / App Store</h4>
+            <p>No especificado en el proyecto. Requiere:</p>
+            <ul>
+              <li>Cuentas de desarrollador en Google Play Console y Apple Developer Program.</li>
+              <li>Configuración de firma de aplicaciones.</li>
+              <li>Proceso de revisión de cada plataforma.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================
+           SECCIÓN 12: DESINSTALACIÓN
+           ====================================================== -->
+      <section class="section" id="desinstalacion">
+        <div class="section-header">
+          <span class="section-num">12</span>
+          <h2>Desinstalación</h2>
+        </div>
+
+        <h3>12.1 Eliminar dependencias descargadas</h3>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+          <pre>flutter clean</pre>
+        </div>
+        <p>Este comando elimina la carpeta <code>build/</code> y los archivos de caché locales. Los paquetes de pub.dev cacheados se pueden eliminar borrando:</p>
+        <ul>
+          <li><strong>Windows:</strong> <code>%LOCALAPPDATA%\Pub\Cache</code></li>
+          <li><strong>macOS/Linux:</strong> <code>~/.pub-cache</code></li>
+        </ul>
+
+        <h3>12.2 Eliminar archivos generados por build_runner</h3>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+          <pre>dart run build_runner clean</pre>
+        </div>
+        <p>O borrar manualmente todos los archivos con extensión <code>.g.dart</code> del directorio <code>lib/</code>.</p>
+
+        <h3>12.3 Eliminar los datos de la aplicación (base de datos Hive)</h3>
+        <ul>
+          <li><strong>Emulador Android:</strong> Device Manager &gt; Wipe Data en el AVD, o desde el dispositivo: Ajustes &gt; Aplicaciones &gt; Presupuesto App &gt; Almacenamiento &gt; Borrar datos.</li>
+          <li><strong>Windows:</strong> Eliminar los archivos <code>.hive</code> y <code>.lock</code> en <code>%APPDATA%\presupuesto_app\</code>.</li>
+        </ul>
+
+        <h3>12.4 Eliminar el proyecto del equipo de desarrollo</h3>
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+          <pre># Windows (PowerShell)
+Remove-Item -Recurse -Force presupuesto_app
+
+# macOS / Linux
+rm -rf presupuesto_app</pre>
+        </div>
+
+        <h3>12.5 Desinstalar Flutter SDK (opcional)</h3>
+        <ol>
+          <li>Eliminar la carpeta donde se extrajo el SDK (ejemplo: <code>C:\desarrollo\flutter</code>).</li>
+          <li>Remover la entrada de <code>flutter\bin</code> del PATH del sistema.</li>
+          <li>Desinstalar Android Studio desde el panel de aplicaciones del SO si ya no se necesita.</li>
+        </ol>
+      </section>
+
+      <!-- ======================================================
+           SECCIÓN 13: CONCLUSIÓN
+           ====================================================== -->
+      <section class="section" id="conclusion">
+        <div class="section-header">
+          <span class="section-num">13</span>
+          <h2>Conclusión</h2>
+        </div>
+
+        <p>El proceso de instalación de Presupuesto App consta de los siguientes pasos principales:</p>
+
+        <div class="timeline">
+          <div class="tl-step" data-num="1">
+            <h4>Instalar Flutter SDK y configurar el PATH</h4>
+            <p>Descargar el SDK, extraer en ruta sin espacios y agregar <code>flutter\bin</code> al PATH del sistema.</p>
+          </div>
+          <div class="tl-step" data-num="2">
+            <h4>Instalar Android Studio con Android SDK y aceptar licencias</h4>
+            <p>Usar <code>flutter doctor --android-licenses</code> para aceptar todas las licencias pendientes.</p>
+          </div>
+          <div class="tl-step" data-num="3">
+            <h4>Instalar Git y clonar el repositorio</h4>
+            <p>Clonar con <code>git clone [URL_DEL_REPOSITORIO]</code> y acceder al directorio del proyecto.</p>
+          </div>
+          <div class="tl-step" data-num="4">
+            <h4>Ejecutar flutter pub get</h4>
+            <p>Descargar e instalar todas las dependencias declaradas en <code>pubspec.yaml</code>.</p>
+          </div>
+          <div class="tl-step" data-num="5">
+            <h4>Ejecutar dart run build_runner build</h4>
+            <p>Generar los adaptadores de Hive (<code>.g.dart</code>) necesarios para la base de datos local.</p>
+          </div>
+          <div class="tl-step" data-num="6">
+            <h4>Iniciar un emulador o conectar un dispositivo físico</h4>
+            <p>Verificar disponibilidad con <code>flutter devices</code> antes de ejecutar.</p>
+          </div>
+          <div class="tl-step" data-num="7">
+            <h4>Ejecutar flutter run</h4>
+            <p>Iniciar la aplicación. Hive se inicializa automáticamente en el primer arranque.</p>
+          </div>
+        </div>
+
+        <div class="alert" style="margin-top:1rem">
+          No se requiere configurar base de datos externa, servidores ni variables de entorno.
+          La aplicación es completamente autónoma y funciona de forma offline desde el primer arranque.
+        </div>
+
+        <div class="alert warn" style="margin-top:0.75rem">
+          Ante cualquier problema durante la instalación, consultar la sección 10 de este manual
+          que cubre los errores más frecuentes con sus soluciones paso a paso.
+        </div>
+      </section>
+
+    </main><!-- /content -->
+  </div><!-- /layout -->
+
+  <!-- ============================================================
+       BOTÓN VOLVER ARRIBA
+       ============================================================ -->
+  <button id="back-top" aria-label="Volver al inicio" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M18 15l-6-6-6 6"/>
+    </svg>
+  </button>
+
+  <!-- ============================================================
+       JAVASCRIPT
+       ============================================================ -->
+  <script>
+    /* ---- Barra de progreso de lectura ---- */
+    const progressBar = document.getElementById('progress-bar');
+    window.addEventListener('scroll', () => {
+      const scrollTop  = document.documentElement.scrollTop;
+      const docHeight  = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+      const pct        = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+      progressBar.style.width = pct + '%';
+    });
+
+    /* ---- Botón volver arriba ---- */
+    const backTop = document.getElementById('back-top');
+    window.addEventListener('scroll', () => {
+      backTop.classList.toggle('visible', window.scrollY > 400);
+    });
+
+    /* ---- Resaltado de sección activa en el menú ---- */
+    const sections  = document.querySelectorAll('.section');
+    const navLinks  = document.querySelectorAll('.nav-link');
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          navLinks.forEach(link => {
+            link.classList.toggle(
+              'active',
+              link.getAttribute('href') === '#' + entry.target.id
+            );
+          });
+        }
+      });
+    }, { rootMargin: '-30% 0px -60% 0px' });
+
+    sections.forEach(sec => observer.observe(sec));
+
+    /* ---- Filtro de búsqueda en la barra lateral ---- */
+    document.getElementById('nav-search').addEventListener('input', function () {
+      const q = this.value.toLowerCase();
+      navLinks.forEach(link => {
+        const text = link.textContent.toLowerCase();
+        link.parentElement.style.display = text.includes(q) ? '' : 'none';
+      });
+    });
+
+    /* ---- Copiar comando ---- */
+    function copyCode(btn) {
+      const pre  = btn.nextElementSibling;
+      const text = pre.textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = 'Copiado';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'Copiar';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    }
+
+    /* ---- Acordeones ---- */
+    function toggleAccordion(btn) {
+      const item = btn.parentElement;
+      item.classList.toggle('open');
+    }
+
+    /* ---- Buscador de errores comunes ---- */
+    function filterAccordions() {
+      const q     = document.getElementById('error-search').value.toLowerCase();
+      const items = document.querySelectorAll('.accordion-item');
+      items.forEach(item => {
+        const kw   = (item.dataset.keywords || '').toLowerCase();
+        const text = item.textContent.toLowerCase();
+        const show = kw.includes(q) || text.includes(q) || q === '';
+        item.dataset.hidden = show ? 'false' : 'true';
+      });
+    }
+
+    /* ---- Checklist interactivo ---- */
+    function toggleCheck(li) {
+      li.classList.toggle('done');
+      updateChecklistProgress();
+    }
+
+    function updateChecklistProgress() {
+      const items = document.querySelectorAll('#checklist li');
+      const done  = document.querySelectorAll('#checklist li.done').length;
+      const total = items.length;
+      const pct   = total > 0 ? Math.round((done / total) * 100) : 0;
+
+      document.getElementById('cl-text').textContent = `Completado: ${done} / ${total}`;
+      document.getElementById('cl-bar').style.width  = pct + '%';
+
+      const summary = document.getElementById('cl-summary');
+      if (done === total) {
+        summary.textContent = 'La instalación está completamente verificada.';
+        summary.style.color = 'var(--green-dk)';
+      } else if (done > 0) {
+        summary.textContent = `${pct}% completado — continúa verificando los pasos restantes.`;
+        summary.style.color = 'var(--text-sec)';
+      } else {
+        summary.textContent = 'Marca cada paso completado para registrar tu progreso.';
+        summary.style.color = 'var(--text-sec)';
+      }
+    }
+  </script>
+
+</body>
+</html>
