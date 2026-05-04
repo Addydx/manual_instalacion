@@ -1,0 +1,1622 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manual de Instalación — Presupuesto App</title>
+
+  <!-- ================================================
+       ESTILOS GLOBALES
+       ================================================ -->
+  <style>
+    /* ---------- Reset & Base ---------- */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #F7F9F8;
+      --surface:   #FFFFFF;
+      --text:      #1F2933;
+      --muted:     #52606D;
+      --accent:    #7FB3A8;
+      --accent-dk: #5E9C90;
+      --border:    #E4E7EB;
+      --warn-bg:   #FFF8EC;
+      --warn-br:   #F0B429;
+      --note-bg:   #EFF8F6;
+      --note-br:   #7FB3A8;
+      --danger-bg: #FEF0F0;
+      --danger-br: #E66;
+      --radius:    10px;
+      --nav-w:     260px;
+      --header-h:  60px;
+      --font: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.75;
+      min-height: 100vh;
+    }
+
+    /* ---------- Barra de progreso ---------- */
+    #progress-bar {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: var(--accent);
+      z-index: 1000;
+      transition: width 0.1s linear;
+    }
+
+    /* ---------- Header ---------- */
+    header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--header-h);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 200;
+      gap: 16px;
+    }
+
+    .header-brand {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.2;
+    }
+
+    .header-brand .label {
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .header-brand .title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+
+    /* Buscador en header */
+    .search-wrap {
+      flex: 1;
+      max-width: 340px;
+      position: relative;
+    }
+
+    .search-wrap input {
+      width: 100%;
+      padding: 7px 14px 7px 36px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 0.875rem;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-wrap input:focus { border-color: var(--accent); }
+
+    .search-icon {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 0.9rem;
+      pointer-events: none;
+    }
+
+    #search-results {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0; right: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      max-height: 280px;
+      overflow-y: auto;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      z-index: 300;
+    }
+
+    .search-item {
+      padding: 10px 16px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+
+    .search-item:last-child { border-bottom: none; }
+    .search-item:hover { background: var(--note-bg); }
+
+    .search-item .si-section {
+      font-size: 0.75rem;
+      color: var(--accent-dk);
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    /* Botón menú móvil */
+    #menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+      color: var(--text);
+      font-size: 1.3rem;
+      line-height: 1;
+    }
+
+    /* ---------- Layout principal ---------- */
+    .layout {
+      display: flex;
+      padding-top: var(--header-h);
+      min-height: 100vh;
+    }
+
+    /* ---------- Sidebar / Nav lateral ---------- */
+    nav#sidebar {
+      position: fixed;
+      top: var(--header-h);
+      left: 0;
+      width: var(--nav-w);
+      height: calc(100vh - var(--header-h));
+      overflow-y: auto;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 24px 0 40px;
+      z-index: 100;
+      transition: transform 0.3s ease;
+    }
+
+    nav#sidebar .nav-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      padding: 0 20px 8px;
+    }
+
+    nav#sidebar a {
+      display: block;
+      padding: 8px 20px;
+      font-size: 0.875rem;
+      color: var(--muted);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+      line-height: 1.4;
+    }
+
+    nav#sidebar a:hover {
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    nav#sidebar a.active {
+      color: var(--accent-dk);
+      border-left-color: var(--accent);
+      background: var(--note-bg);
+      font-weight: 600;
+    }
+
+    /* ---------- Contenido principal ---------- */
+    main {
+      margin-left: var(--nav-w);
+      flex: 1;
+      padding: 48px 40px 80px;
+      max-width: calc(var(--nav-w) + 900px);
+    }
+
+    .content-wrap {
+      max-width: 760px;
+    }
+
+    /* ---------- Secciones ---------- */
+    section.doc-section {
+      margin-bottom: 72px;
+      scroll-margin-top: calc(var(--header-h) + 24px);
+    }
+
+    /* ---------- Tipografía ---------- */
+    h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 28px 0 10px;
+    }
+
+    h4 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin: 20px 0 8px;
+    }
+
+    p { margin-bottom: 14px; color: var(--text); font-size: 0.9375rem; }
+
+    /* ---------- Intro hero ---------- */
+    .doc-hero {
+      margin-bottom: 64px;
+    }
+
+    .doc-hero .badge {
+      display: inline-block;
+      background: var(--note-bg);
+      color: var(--accent-dk);
+      border: 1px solid var(--note-br);
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      padding: 3px 12px;
+      margin-bottom: 16px;
+    }
+
+    .doc-hero p {
+      font-size: 1rem;
+      color: var(--muted);
+      max-width: 600px;
+    }
+
+    /* ---------- Tarjetas de requisitos ---------- */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin: 20px 0;
+    }
+
+    .req-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+
+    .req-card .rc-icon {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+    }
+
+    .req-card .rc-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .req-card .rc-value {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* ---------- Tablas ---------- */
+    .table-wrap {
+      overflow-x: auto;
+      margin: 20px 0;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+
+    thead tr { background: var(--bg); }
+
+    th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 12px 16px;
+      color: var(--text);
+      border-bottom: 1px solid var(--border);
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: var(--bg); }
+
+    /* ---------- Pasos numerados ---------- */
+    .steps { margin: 20px 0; display: flex; flex-direction: column; gap: 2px; }
+
+    .step {
+      display: flex;
+      gap: 16px;
+      padding: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      position: relative;
+    }
+
+    .step + .step { margin-top: -1px; border-radius: 0; }
+    .step:first-child { border-radius: var(--radius) var(--radius) 0 0; }
+    .step:last-child  { border-radius: 0 0 var(--radius) var(--radius); }
+    .step:only-child  { border-radius: var(--radius); }
+
+    .step-num {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-top: 1px;
+    }
+
+    .step-body { flex: 1; }
+    .step-body strong { display: block; font-size: 0.9rem; margin-bottom: 4px; }
+    .step-body p { margin: 0; font-size: 0.875rem; color: var(--muted); }
+    .step-body ul { margin: 6px 0 0 16px; }
+    .step-body ul li { font-size: 0.875rem; color: var(--muted); margin-bottom: 3px; }
+
+    /* ---------- Cajas de nota / advertencia ---------- */
+    .callout {
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      margin: 20px 0;
+      display: flex;
+      gap: 12px;
+      font-size: 0.875rem;
+      line-height: 1.65;
+    }
+
+    .callout .callout-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+    .callout .callout-body { flex: 1; }
+    .callout .callout-body strong { display: block; margin-bottom: 4px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    .callout.note    { background: var(--note-bg);   border: 1px solid var(--note-br); }
+    .callout.warning { background: var(--warn-bg);   border: 1px solid var(--warn-br); }
+    .callout.danger  { background: var(--danger-bg); border: 1px solid var(--danger-br); }
+
+    .callout.note    .callout-body strong { color: var(--accent-dk); }
+    .callout.warning .callout-body strong { color: #B67B00; }
+    .callout.danger  .callout-body strong { color: #C00; }
+
+    /* ---------- Acordeón (Problemas comunes) ---------- */
+    .accordion { margin: 16px 0; }
+
+    .acc-item {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+
+    .acc-header {
+      width: 100%;
+      background: var(--surface);
+      border: none;
+      text-align: left;
+      padding: 16px 20px;
+      font-family: var(--font);
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      transition: background 0.15s;
+    }
+
+    .acc-header:hover { background: var(--bg); }
+
+    .acc-header.open { background: var(--note-bg); color: var(--accent-dk); }
+
+    .acc-chevron {
+      flex-shrink: 0;
+      transition: transform 0.25s ease;
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+
+    .acc-header.open .acc-chevron { transform: rotate(180deg); color: var(--accent-dk); }
+
+    .acc-body {
+      display: none;
+      padding: 0 20px 20px;
+      background: var(--surface);
+      font-size: 0.875rem;
+    }
+
+    .acc-body.open { display: block; }
+
+    .acc-symptom {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      margin-bottom: 6px;
+      padding-top: 4px;
+    }
+
+    .acc-body ul { margin-left: 18px; }
+    .acc-body ul li { margin-bottom: 4px; color: var(--muted); }
+
+    /* ---------- Lista con check ---------- */
+    .check-list { list-style: none; margin: 12px 0; }
+    .check-list li {
+      padding: 5px 0 5px 28px;
+      position: relative;
+      font-size: 0.9375rem;
+      color: var(--muted);
+    }
+    .check-list li::before {
+      content: '✓';
+      position: absolute;
+      left: 4px;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* ---------- Sección colapsable ---------- */
+    .collapsible-section {}
+
+    .collapse-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent-dk);
+      padding: 0;
+      margin-bottom: 12px;
+      letter-spacing: 0.03em;
+    }
+
+    .collapse-toggle .ct-arrow { transition: transform 0.2s; font-size: 0.65rem; }
+    .collapse-toggle.collapsed .ct-arrow { transform: rotate(-90deg); }
+
+    .collapse-body { transition: none; }
+    .collapse-body.hidden { display: none; }
+
+    /* ---------- Separador ---------- */
+    hr.divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 48px 0;
+    }
+
+    /* ---------- Botón volver arriba ---------- */
+    #back-top {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      width: 44px;
+      height: 44px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s, transform 0.25s;
+      box-shadow: 0 4px 14px rgba(127,179,168,0.5);
+      z-index: 150;
+    }
+
+    #back-top.visible { opacity: 1; pointer-events: auto; }
+    #back-top:hover { transform: translateY(-3px); background: var(--accent-dk); }
+
+    /* ---------- Footer ---------- */
+    footer {
+      text-align: center;
+      padding: 32px 24px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      margin-left: var(--nav-w);
+    }
+
+    /* ---------- Highlight de búsqueda ---------- */
+    mark {
+      background: #FFEC99;
+      border-radius: 2px;
+      padding: 0 2px;
+      color: var(--text);
+    }
+
+    /* ================================================
+       RESPONSIVE
+       ================================================ */
+    @media (max-width: 768px) {
+      #menu-toggle { display: block; }
+
+      nav#sidebar {
+        transform: translateX(-100%);
+      }
+
+      nav#sidebar.open {
+        transform: translateX(0);
+        box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+      }
+
+      main {
+        margin-left: 0;
+        padding: 32px 20px 60px;
+        max-width: 100%;
+      }
+
+      footer { margin-left: 0; }
+
+      .search-wrap { max-width: 200px; }
+
+      #back-top { bottom: 20px; right: 20px; }
+
+      h1 { font-size: 1.5rem; }
+    }
+
+    @media (max-width: 480px) {
+      .search-wrap { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Barra de progreso de lectura -->
+<div id="progress-bar"></div>
+
+<!-- ================================================
+     HEADER
+     ================================================ -->
+<header>
+  <div class="header-brand">
+    <span class="label">Documentación</span>
+    <span class="title">Presupuesto App</span>
+  </div>
+
+  <div class="search-wrap">
+    <span class="search-icon">&#128269;</span>
+    <input type="text" id="search-input" placeholder="Buscar en el manual..." autocomplete="off" aria-label="Buscar en el manual" />
+    <div id="search-results" role="listbox" aria-label="Resultados de búsqueda"></div>
+  </div>
+
+  <button id="menu-toggle" aria-label="Abrir menú">&#9776;</button>
+</header>
+
+<!-- ================================================
+     LAYOUT
+     ================================================ -->
+<div class="layout">
+
+  <!-- NAV LATERAL -->
+  <nav id="sidebar" aria-label="Navegación del manual">
+    <div class="nav-label">Contenido</div>
+
+    <a href="#introduccion">Introducción</a>
+    <a href="#requisitos">Requisitos</a>
+    <a href="#android">Instalación en Android</a>
+    <a href="#windows">Instalación en Windows</a>
+    <a href="#primer-uso">Primer uso</a>
+    <a href="#permisos">Permisos</a>
+    <a href="#actualizacion">Actualización</a>
+    <a href="#desinstalacion">Desinstalación</a>
+    <a href="#problemas">Problemas comunes</a>
+    <a href="#recomendaciones">Recomendaciones</a>
+    <a href="#conclusion">Conclusión</a>
+  </nav>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main>
+    <div class="content-wrap">
+
+      <!-- HERO -->
+      <div class="doc-hero" id="top">
+        <div class="badge">Manual de Instalación · Versión 1.0 · Mayo 2026</div>
+        <h1>Manual de Instalación</h1>
+        <p>Guía paso a paso para instalar, configurar y comenzar a usar <strong>Presupuesto App</strong> en su dispositivo Android o computadora con Windows. No se requieren conocimientos técnicos.</p>
+      </div>
+
+      <!-- ==========================
+           1. INTRODUCCIÓN
+           ========================== -->
+      <section class="doc-section" id="introduccion">
+        <h2>Introducción</h2>
+
+        <h3>¿Qué es Presupuesto App?</h3>
+        <p>Presupuesto App es una aplicación móvil y de escritorio diseñada para ayudar a crear, organizar y gestionar presupuestos de construcción u obras de manera sencilla y ordenada.</p>
+
+        <h3>¿Para qué sirve?</h3>
+        <ul class="check-list">
+          <li>Crear y administrar proyectos de construcción u obras.</li>
+          <li>Agregar materiales, equipos y mano de obra a cada presupuesto.</li>
+          <li>Consultar el resumen financiero de cada proyecto.</li>
+          <li>Generar reportes en formato PDF para compartir o imprimir.</li>
+          <li>Registrar y controlar los pagos asociados a cada proyecto.</li>
+        </ul>
+
+        <h3>¿A quién está dirigida?</h3>
+        <ul class="check-list">
+          <li>Maestros de obra, contratistas y constructores independientes.</li>
+          <li>Personas que necesiten llevar el control de gastos de una obra o proyecto.</li>
+          <li>Cualquier usuario que desee organizar presupuestos sin usar hojas de cálculo complicadas.</li>
+        </ul>
+
+        <div class="callout note">
+          <span class="callout-icon">&#8505;</span>
+          <div class="callout-body">
+            <strong>Nota</strong>
+            No se requiere ningún conocimiento técnico para instalar ni usar esta aplicación.
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Campo</th>
+                <th>Detalle</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Nombre</td><td>Presupuesto App</td></tr>
+              <tr><td>Tipo</td><td>Manual de Instalación de la Aplicación</td></tr>
+              <tr><td>Versión</td><td>1.0</td></tr>
+              <tr><td>Fecha</td><td>Mayo 2026</td></tr>
+              <tr><td>Autor</td><td>Equipo de Desarrollo — Presupuesto App</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ==========================
+           2. REQUISITOS
+           ========================== -->
+      <section class="doc-section" id="requisitos">
+        <h2>Requisitos</h2>
+
+        <h3>Dispositivos compatibles</h3>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Dispositivo</th><th>Compatible</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Teléfono Android</td><td>&#10003; Sí</td></tr>
+              <tr><td>iPhone (iOS)</td><td>No especificado</td></tr>
+              <tr><td>Computadora Windows</td><td>&#10003; Sí</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Requisitos mínimos para Android</h3>
+        <div class="cards-grid">
+          <div class="req-card">
+            <div class="rc-icon">&#128241;</div>
+            <div class="rc-title">Sistema operativo</div>
+            <div class="rc-value">Android 6.0 o superior</div>
+          </div>
+          <div class="req-card">
+            <div class="rc-icon">&#128190;</div>
+            <div class="rc-title">Espacio disponible</div>
+            <div class="rc-value">Al menos 50 MB libres</div>
+          </div>
+          <div class="req-card">
+            <div class="rc-icon">&#127760;</div>
+            <div class="rc-title">Conexión a internet</div>
+            <div class="rc-value">No requerida para uso básico</div>
+          </div>
+        </div>
+
+        <h3>Requisitos mínimos para Windows</h3>
+        <div class="cards-grid">
+          <div class="req-card">
+            <div class="rc-icon">&#128187;</div>
+            <div class="rc-title">Sistema operativo</div>
+            <div class="rc-value">Windows 10 o superior</div>
+          </div>
+          <div class="req-card">
+            <div class="rc-icon">&#128190;</div>
+            <div class="rc-title">Espacio disponible</div>
+            <div class="rc-value">Al menos 100 MB libres</div>
+          </div>
+          <div class="req-card">
+            <div class="rc-icon">&#127760;</div>
+            <div class="rc-title">Conexión a internet</div>
+            <div class="rc-value">No requerida para uso básico</div>
+          </div>
+        </div>
+
+        <div class="callout warning">
+          <span class="callout-icon">&#9888;</span>
+          <div class="callout-body">
+            <strong>Importante</strong>
+            Si su dispositivo no cumple con estos requisitos mínimos, es posible que la aplicación no funcione correctamente.
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================
+           3. ANDROID
+           ========================== -->
+      <section class="doc-section" id="android">
+        <h2>Instalación en Android</h2>
+
+        <p>La instalación se realiza mediante un archivo <strong>APK</strong>, que es el instalador de la aplicación para Android. Siga los pasos a continuación.</p>
+
+        <!-- Opción 1: APK -->
+        <h3>Opción 1: Instalación por archivo APK</h3>
+
+        <!-- Paso 1 -->
+        <button class="collapse-toggle" data-target="android-steps-1">
+          <span class="ct-arrow">&#9660;</span> Ver pasos de instalación
+        </button>
+        <div class="collapse-body" id="android-steps-1">
+          <div class="steps">
+
+            <div class="step">
+              <div class="step-num">1</div>
+              <div class="step-body">
+                <strong>Descargar el archivo APK</strong>
+                <ul>
+                  <li>Abra el navegador de internet en su teléfono (por ejemplo, Chrome).</li>
+                  <li>Ingrese al enlace o sitio web donde se le indicó descargar la aplicación.</li>
+                  <li>Toque el botón de descarga del archivo <strong>PresupuestoApp.apk</strong>.</li>
+                  <li>Espere a que la descarga termine. Verá una notificación cuando esté listo.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">2</div>
+              <div class="step-body">
+                <strong>Ir a la carpeta de descargas</strong>
+                <ul>
+                  <li>Abra la aplicación "Archivos" o "Mis archivos" en su teléfono.</li>
+                  <li>Busque la carpeta llamada "Descargas".</li>
+                  <li>Dentro de esa carpeta encontrará el archivo <strong>PresupuestoApp.apk</strong>.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">3</div>
+              <div class="step-body">
+                <strong>Activar la instalación de aplicaciones desconocidas</strong>
+                <ul>
+                  <li>Toque el archivo <strong>PresupuestoApp.apk</strong>.</li>
+                  <li>Si aparece la advertencia "No se permite instalar aplicaciones de fuentes desconocidas", toque "Configuración" o "Ajustes".</li>
+                  <li>Active la opción "Permitir desde esta fuente" o "Instalar aplicaciones desconocidas".</li>
+                  <li>Regrese a la carpeta de Descargas y toque el archivo nuevamente.</li>
+                </ul>
+                <div class="callout note" style="margin-top:10px;">
+                  <span class="callout-icon">&#8505;</span>
+                  <div class="callout-body">
+                    <strong>¿Por qué es necesario este paso?</strong>
+                    Android bloquea por seguridad la instalación de aplicaciones que no vienen de la tienda oficial. Al activar este permiso, usted le indica al teléfono que confía en esta aplicación.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">4</div>
+              <div class="step-body">
+                <strong>Instalar la aplicación</strong>
+                <ul>
+                  <li>Toque el archivo <strong>PresupuestoApp.apk</strong>.</li>
+                  <li>Aparecerá una pantalla preguntando si desea instalar. Toque "Instalar".</li>
+                  <li>Espere unos segundos mientras se instala.</li>
+                  <li>Cuando termine, verá el mensaje "Aplicación instalada".</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="step">
+              <div class="step-num">5</div>
+              <div class="step-body">
+                <strong>Abrir la aplicación</strong>
+                <ul>
+                  <li>Toque el botón "Abrir" que aparece al finalizar la instalación.</li>
+                  <li>O busque el icono de Presupuesto App en la pantalla de inicio o en la lista de aplicaciones de su teléfono.</li>
+                </ul>
+              </div>
+            </div>
+
+          </div><!-- /steps -->
+        </div><!-- /collapse-body -->
+
+        <!-- Opción 2: Tienda -->
+        <h3>Opción 2: Instalación desde Google Play (si aplica)</h3>
+        <p>Si en el futuro la aplicación se publica en la tienda Google Play, el proceso sería el siguiente:</p>
+
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body"><p>Abra la aplicación <strong>Google Play Store</strong> en su teléfono.</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body"><p>En la barra de búsqueda, escriba <strong>"Presupuesto App"</strong>.</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body"><p>Seleccione la aplicación en los resultados de búsqueda.</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-body"><p>Toque el botón <strong>"Instalar"</strong> y espere a que finalice.</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num">5</div>
+            <div class="step-body"><p>Toque <strong>"Abrir"</strong> para iniciar la aplicación.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================
+           4. WINDOWS
+           ========================== -->
+      <section class="doc-section" id="windows">
+        <h2>Instalación en Windows</h2>
+
+        <p>La instalación en computadora se realiza mediante el archivo <strong>PresupuestoApp.exe</strong>. Siga los pasos a continuación.</p>
+
+        <div class="steps">
+
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>Descargar el archivo de instalación</strong>
+              <ul>
+                <li>Abra su navegador de internet (Chrome, Edge, etc.).</li>
+                <li>Ingrese al sitio web donde se le indicó descargar la aplicación.</li>
+                <li>Haga clic en el botón de descarga del archivo <strong>PresupuestoApp.exe</strong>.</li>
+                <li>Espere hasta que termine la descarga.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Ejecutar el instalador</strong>
+              <ul>
+                <li>Abra la carpeta de <strong>Descargas</strong> en su computadora.</li>
+                <li>Haga doble clic sobre el archivo <strong>PresupuestoApp.exe</strong>.</li>
+                <li>Si aparece la ventana "Windows protegió su equipo", haga clic en <strong>"Más información"</strong> y luego en <strong>"Ejecutar de todas formas"</strong>.</li>
+              </ul>
+              <div class="callout note" style="margin-top:10px;">
+                <span class="callout-icon">&#8505;</span>
+                <div class="callout-body">
+                  <strong>¿Por qué aparece esta advertencia?</strong>
+                  Windows muestra esta advertencia cuando se instala un programa que no proviene de la tienda oficial de Microsoft. Es completamente normal para aplicaciones distribuidas de forma directa.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Seguir las instrucciones del instalador</strong>
+              <ul>
+                <li>Aparecerá el asistente de instalación. Haga clic en <strong>"Siguiente"</strong> o <strong>"Instalar"</strong> para continuar.</li>
+                <li>Puede dejar la carpeta de instalación que aparece por defecto.</li>
+                <li>Haga clic en <strong>"Instalar"</strong> y espere a que el proceso termine.</li>
+                <li>Cuando finalice, haga clic en <strong>"Finalizar"</strong>.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <strong>Abrir la aplicación</strong>
+              <ul>
+                <li>Busque el icono de <strong>Presupuesto App</strong> en el escritorio de su computadora.</li>
+                <li>Haga doble clic para abrir la aplicación.</li>
+                <li>También puede encontrarla desde el menú Inicio de Windows buscando "Presupuesto App".</li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ==========================
+           5. PRIMER USO
+           ========================== -->
+      <section class="doc-section" id="primer-uso">
+        <h2>Primer uso</h2>
+
+        <h3>Pantalla de carga</h3>
+        <p>Al abrir la aplicación por primera vez, verá una pantalla de carga con el nombre y logo de Presupuesto App. Esta pantalla dura unos segundos mientras la aplicación se prepara.</p>
+
+        <h3>Pantalla principal</h3>
+        <p>Después de la pantalla de carga, la aplicación lo llevará a la pantalla principal. Desde ahí podrá ver:</p>
+        <ul class="check-list">
+          <li>Un listado de sus proyectos existentes (estará vacío la primera vez).</li>
+          <li>Un botón para crear un nuevo proyecto.</li>
+          <li>La barra de navegación en la parte inferior de la pantalla.</li>
+        </ul>
+
+        <h3>Navegación de la aplicación</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Sección</th><th>Para qué sirve</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Inicio</strong></td><td>Ver todos sus proyectos y acceder a ellos</td></tr>
+              <tr><td><strong>Materiales</strong></td><td>Consultar y gestionar el catálogo de materiales</td></tr>
+              <tr><td><strong>Equipos</strong></td><td>Registrar y consultar equipos utilizados en proyectos</td></tr>
+              <tr><td><strong>Finanzas</strong></td><td>Ver el resumen financiero de pagos y presupuestos</td></tr>
+              <tr><td><strong>Configuración</strong></td><td>Ajustes generales de la aplicación</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Ejemplo de uso inicial</h3>
+        <p>Suponga que acaba de instalar la aplicación. Al abrirla por primera vez:</p>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body"><p>La pantalla le mostrará el mensaje: <em>"No hay proyectos registrados"</em>.</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body"><p>Toque el botón <strong>"Nuevo proyecto"</strong> o el ícono de más (+).</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body"><p>Ingrese el nombre del proyecto, por ejemplo: <em>"Remodelación casa"</em>.</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-body"><p>Guarde el proyecto y comience a agregar materiales, equipos y costos.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================
+           6. PERMISOS
+           ========================== -->
+      <section class="doc-section" id="permisos">
+        <h2>Permisos de la aplicación</h2>
+
+        <p>Al usar ciertas funciones, la aplicación solicitará permisos en su dispositivo. A continuación se explica cada uno.</p>
+
+        <h3>Cámara</h3>
+        <p>La aplicación puede solicitar acceso a la cámara para tomar fotografías de materiales o avances de obra y adjuntarlas a los proyectos.</p>
+        <p>Si no desea usar esta función, puede rechazar el permiso. La aplicación seguirá funcionando con normalidad.</p>
+
+        <h3>Almacenamiento</h3>
+        <p>La aplicación solicita acceso al almacenamiento para:</p>
+        <ul class="check-list">
+          <li>Guardar los datos de sus proyectos y presupuestos localmente en el dispositivo.</li>
+          <li>Exportar y guardar reportes en formato PDF.</li>
+        </ul>
+
+        <div class="callout warning">
+          <span class="callout-icon">&#9888;</span>
+          <div class="callout-body">
+            <strong>Importante</strong>
+            Si rechaza el permiso de almacenamiento, es posible que no pueda exportar los reportes en PDF.
+          </div>
+        </div>
+
+        <h3>¿Por qué son necesarios estos permisos?</h3>
+        <p>Todos los permisos que solicita la aplicación tienen una función específica dentro de ella. <strong>La aplicación no comparte su información con terceros ni la envía a internet.</strong> Sus datos permanecen guardados únicamente en su dispositivo.</p>
+      </section>
+
+      <!-- ==========================
+           7. ACTUALIZACIÓN
+           ========================== -->
+      <section class="doc-section" id="actualizacion">
+        <h2>Actualización de la aplicación</h2>
+
+        <h3>Cómo actualizar en Android (por APK)</h3>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body"><p>Descargue el nuevo archivo <strong>PresupuestoApp.apk</strong> desde el mismo sitio donde lo descargó originalmente.</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body"><p>Siga los mismos pasos de instalación descritos en la sección <strong>Instalación en Android</strong>.</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body"><p>El sistema detectará que ya existe una versión instalada y la actualizará automáticamente.</p></div>
+          </div>
+        </div>
+
+        <div class="callout note">
+          <span class="callout-icon">&#128274;</span>
+          <div class="callout-body">
+            <strong>Sus datos están seguros</strong>
+            Al actualizar por APK, los proyectos y presupuestos guardados no se eliminan. Sus datos se conservan tal como estaban.
+          </div>
+        </div>
+
+        <h3>Cómo actualizar en Windows</h3>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body"><p>Descargue el nuevo archivo <strong>PresupuestoApp.exe</strong> desde el sitio oficial.</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body"><p>Ejecute el instalador y siga los pasos normales de instalación.</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body"><p>El instalador reemplazará la versión anterior por la nueva automáticamente.</p></div>
+          </div>
+        </div>
+
+        <div class="callout note">
+          <span class="callout-icon">&#128274;</span>
+          <div class="callout-body">
+            <strong>Sus datos están seguros</strong>
+            Al actualizar en Windows, sus proyectos guardados se conservan.
+          </div>
+        </div>
+
+        <h3>¿Cómo saber si hay una nueva versión disponible?</h3>
+        <div class="callout warning">
+          <span class="callout-icon">&#9888;</span>
+          <div class="callout-body">
+            <strong>Recomendación</strong>
+            Revise periódicamente el sitio o canal donde le fue entregada la aplicación para verificar si hay versiones nuevas disponibles.
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================
+           8. DESINSTALACIÓN
+           ========================== -->
+      <section class="doc-section" id="desinstalacion">
+        <h2>Desinstalación</h2>
+
+        <div class="callout danger">
+          <span class="callout-icon">&#9940;</span>
+          <div class="callout-body">
+            <strong>Advertencia importante</strong>
+            Al desinstalar la aplicación, todos los datos guardados (proyectos, materiales, presupuestos) serán eliminados permanentemente. Asegúrese de haber exportado los reportes que necesite antes de desinstalar.
+          </div>
+        </div>
+
+        <h3>En Android</h3>
+
+        <h4>Método rápido</h4>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body"><p>Mantenga presionado el ícono de <strong>Presupuesto App</strong> en la pantalla de inicio.</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body"><p>Seleccione la opción <strong>"Desinstalar"</strong> que aparecerá en pantalla.</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body"><p>Confirme tocando <strong>"Aceptar"</strong> o <strong>"Desinstalar"</strong>.</p></div>
+          </div>
+        </div>
+
+        <h4>Método desde Configuración</h4>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body"><p>Vaya a <strong>Configuración</strong> del teléfono.</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body"><p>Toque <strong>"Aplicaciones"</strong> o <strong>"Administrador de aplicaciones"</strong>.</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body"><p>Busque <strong>Presupuesto App</strong> en la lista.</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-body"><p>Toque <strong>"Desinstalar"</strong> y confirme.</p></div>
+          </div>
+        </div>
+
+        <h3>En Windows</h3>
+
+        <h4>Desde Configuración del sistema</h4>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body"><p>Haga clic en el botón <strong>Inicio</strong> de Windows.</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body"><p>Vaya a <strong>Configuración</strong> (ícono de engranaje).</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body"><p>Seleccione <strong>"Aplicaciones"</strong> o <strong>"Aplicaciones y características"</strong>.</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-body"><p>Busque <strong>Presupuesto App</strong> en la lista de aplicaciones instaladas.</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num">5</div>
+            <div class="step-body"><p>Haga clic sobre ella, seleccione <strong>"Desinstalar"</strong> y confirme.</p></div>
+          </div>
+        </div>
+
+        <h4>Método rápido desde el escritorio</h4>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body"><p>Haga clic derecho sobre el ícono de <strong>Presupuesto App</strong> en el escritorio.</p></div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body"><p>Seleccione <strong>"Desinstalar"</strong> si la opción está disponible y confirme.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================
+           9. PROBLEMAS COMUNES
+           ========================== -->
+      <section class="doc-section" id="problemas">
+        <h2>Problemas comunes</h2>
+
+        <p>A continuación encontrará los problemas más frecuentes y sus soluciones. Haga clic en cada uno para ver los detalles.</p>
+
+        <!-- Tabla resumen -->
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Problema</th><th>Solución rápida</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>No se instala el APK</td><td>Activar fuentes desconocidas y revisar espacio libre</td></tr>
+              <tr><td>Bloqueo por seguridad</td><td>Confirmar instalación manualmente desde ajustes</td></tr>
+              <tr><td>La aplicación no abre</td><td>Reiniciar el dispositivo o reinstalar la app</td></tr>
+              <tr><td>Falta de espacio</td><td>Liberar espacio eliminando archivos innecesarios</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Acordeones -->
+        <div class="accordion">
+
+          <div class="acc-item">
+            <button class="acc-header" aria-expanded="false">
+              Problema 1: No se instala el APK en Android
+              <span class="acc-chevron">&#9660;</span>
+            </button>
+            <div class="acc-body">
+              <p class="acc-symptom">Síntoma</p>
+              <p>Al tocar el archivo APK, no ocurre nada o aparece un error.</p>
+              <p class="acc-symptom" style="margin-top:12px;">Solución</p>
+              <ul>
+                <li>Verifique que haya activado la opción "Instalar aplicaciones de fuentes desconocidas" (ver sección Instalación en Android, Paso 3).</li>
+                <li>Compruebe que el archivo APK se descargó correctamente. Intente descargarlo nuevamente si hay dudas.</li>
+                <li>Verifique que tiene al menos 50 MB de espacio libre en el teléfono.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="acc-item">
+            <button class="acc-header" aria-expanded="false">
+              Problema 2: Bloqueo por seguridad
+              <span class="acc-chevron">&#9660;</span>
+            </button>
+            <div class="acc-body">
+              <p class="acc-symptom">Síntoma</p>
+              <p>Aparece el mensaje "Instalación bloqueada" o "Esta aplicación puede ser dañina".</p>
+              <p class="acc-symptom" style="margin-top:12px;">Solución</p>
+              <ul>
+                <li>Esta advertencia es normal para aplicaciones que no vienen de Google Play.</li>
+                <li>Toque "Más detalles" o "Instalar de todas formas" si confirma que el archivo proviene de una fuente de confianza.</li>
+                <li>Si el bloqueo persiste, vaya a Configuración &gt; Seguridad y active "Fuentes desconocidas" de forma general.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="acc-item">
+            <button class="acc-header" aria-expanded="false">
+              Problema 3: La aplicación no abre
+              <span class="acc-chevron">&#9660;</span>
+            </button>
+            <div class="acc-body">
+              <p class="acc-symptom">Síntoma</p>
+              <p>Toca el ícono de la app y la pantalla se queda en negro o se cierra sola.</p>
+              <p class="acc-symptom" style="margin-top:12px;">Solución</p>
+              <ul>
+                <li>Reinicie su teléfono o computadora e intente abrir la aplicación nuevamente.</li>
+                <li>Verifique que su dispositivo cumple con los requisitos mínimos (ver sección Requisitos).</li>
+                <li>Desinstale la aplicación y vuelva a instalarla desde cero.</li>
+                <li>Si el problema persiste, contacte al soporte técnico.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="acc-item">
+            <button class="acc-header" aria-expanded="false">
+              Problema 4: Falta de espacio en el dispositivo
+              <span class="acc-chevron">&#9660;</span>
+            </button>
+            <div class="acc-body">
+              <p class="acc-symptom">Síntoma</p>
+              <p>Aparece el mensaje "No hay espacio suficiente" al intentar instalar.</p>
+              <p class="acc-symptom" style="margin-top:12px;">Solución</p>
+              <ul>
+                <li>Abra la Galería o Archivos de su teléfono y elimine fotos, videos o archivos que ya no necesite.</li>
+                <li>Desinstale aplicaciones que no use.</li>
+                <li>Mueva archivos a una tarjeta de memoria SD si su teléfono tiene una.</li>
+                <li>Una vez liberado el espacio, intente instalar la aplicación nuevamente.</li>
+              </ul>
+            </div>
+          </div>
+
+        </div><!-- /accordion -->
+      </section>
+
+      <!-- ==========================
+           10. RECOMENDACIONES
+           ========================== -->
+      <section class="doc-section" id="recomendaciones">
+        <h2>Recomendaciones</h2>
+
+        <h3>Mantener la aplicación actualizada</h3>
+        <ul class="check-list">
+          <li>Revise periódicamente si existe una nueva versión disponible.</li>
+          <li>Las actualizaciones pueden incluir correcciones de errores y mejoras en el rendimiento.</li>
+          <li>Instale siempre las actualizaciones desde la misma fuente oficial donde obtuvo la aplicación.</li>
+        </ul>
+
+        <h3>No borrar los datos sin necesidad</h3>
+        <ul class="check-list">
+          <li>Los datos de sus proyectos se guardan localmente en su dispositivo.</li>
+          <li>Si borra los datos de la aplicación desde la configuración del teléfono, perderá toda la información guardada.</li>
+          <li>Antes de borrar datos o desinstalar, exporte los reportes importantes en PDF.</li>
+        </ul>
+
+        <h3>Uso responsable de permisos</h3>
+        <ul class="check-list">
+          <li>Otorgue únicamente los permisos que la aplicación necesita para funcionar.</li>
+          <li>No es necesario dar permiso de cámara si no va a tomar fotos dentro de la app.</li>
+        </ul>
+
+        <h3>Respaldo de información</h3>
+        <div class="callout warning">
+          <span class="callout-icon">&#9888;</span>
+          <div class="callout-body">
+            <strong>Sin respaldo en la nube</strong>
+            La aplicación guarda los datos únicamente en su dispositivo. No existe una copia en la nube de forma automática. Se recomienda exportar periódicamente los presupuestos en PDF como respaldo.
+          </div>
+        </div>
+      </section>
+
+      <!-- ==========================
+           11. CONCLUSIÓN
+           ========================== -->
+      <section class="doc-section" id="conclusion">
+        <h2>Conclusión</h2>
+
+        <p>Presupuesto App es una herramienta práctica y sencilla para gestionar presupuestos de construcción y proyectos de obra. Su instalación es rápida y no requiere conocimientos técnicos.</p>
+
+        <p>Siguiendo los pasos descritos en este manual, cualquier usuario podrá:</p>
+        <ul class="check-list">
+          <li>Instalar la aplicación en su teléfono Android o computadora con Windows.</li>
+          <li>Iniciar la aplicación por primera vez y comenzar a registrar proyectos.</li>
+          <li>Actualizar la aplicación cuando haya nuevas versiones disponibles.</li>
+          <li>Resolver los problemas más comunes que puedan presentarse.</li>
+        </ul>
+
+        <div class="callout note">
+          <span class="callout-icon">&#128172;</span>
+          <div class="callout-body">
+            <strong>¿Necesita ayuda adicional?</strong>
+            Si tiene dudas o experimenta problemas que no están cubiertos en este manual, comuníquese con el equipo de soporte o con la persona que le proporcionó la aplicación.
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <p style="font-size:0.85rem; color:var(--muted); text-align:center;">
+          Presupuesto App &mdash; Versión 1.0 &mdash; Mayo 2026
+        </p>
+      </section>
+
+    </div><!-- /content-wrap -->
+  </main>
+
+</div><!-- /layout -->
+
+<!-- FOOTER -->
+<footer>
+  Manual de Instalación &mdash; Presupuesto App v1.0 &mdash; Mayo 2026
+</footer>
+
+<!-- Botón volver arriba -->
+<button id="back-top" aria-label="Volver al inicio">&#8679;</button>
+
+
+<!-- ================================================
+     JAVASCRIPT
+     ================================================ -->
+<script>
+  /* ---- Utilidades ---- */
+  const $ = id => document.getElementById(id);
+  const $$ = sel => document.querySelectorAll(sel);
+
+  /* ---- Barra de progreso ---- */
+  const progressBar = $('progress-bar');
+
+  function updateProgress() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    progressBar.style.width = pct + '%';
+  }
+
+  /* ---- Botón volver arriba ---- */
+  const backTop = $('back-top');
+
+  function updateBackTop() {
+    if (window.scrollY > 400) {
+      backTop.classList.add('visible');
+    } else {
+      backTop.classList.remove('visible');
+    }
+  }
+
+  backTop.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  /* ---- Resaltado de sección activa en el menú ---- */
+  const navLinks = $$('#sidebar a');
+  const sections = $$('section.doc-section');
+
+  function highlightNav() {
+    let current = '';
+    const offset = 80;
+
+    sections.forEach(sec => {
+      const top = sec.getBoundingClientRect().top;
+      if (top <= offset) current = sec.id;
+    });
+
+    navLinks.forEach(a => {
+      a.classList.remove('active');
+      if (a.getAttribute('href') === '#' + current) {
+        a.classList.add('active');
+      }
+    });
+  }
+
+  /* ---- Scroll unificado ---- */
+  window.addEventListener('scroll', () => {
+    updateProgress();
+    updateBackTop();
+    highlightNav();
+  }, { passive: true });
+
+  /* ---- Menú lateral móvil ---- */
+  const sidebar   = $('sidebar');
+  const menuToggle = $('menu-toggle');
+
+  menuToggle.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+  });
+
+  // Cierra el menú al hacer clic en un enlace (móvil)
+  navLinks.forEach(a => {
+    a.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+    });
+  });
+
+  // Cierra el menú al hacer clic fuera
+  document.addEventListener('click', e => {
+    if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
+      sidebar.classList.remove('open');
+    }
+  });
+
+  /* ---- Acordeones ---- */
+  $$('.acc-header').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const body    = btn.nextElementSibling;
+      const isOpen  = btn.classList.contains('open');
+
+      // Cierra todos
+      $$('.acc-header').forEach(b => {
+        b.classList.remove('open');
+        b.setAttribute('aria-expanded', 'false');
+        b.nextElementSibling.classList.remove('open');
+      });
+
+      // Abre el clickeado si estaba cerrado
+      if (!isOpen) {
+        btn.classList.add('open');
+        btn.setAttribute('aria-expanded', 'true');
+        body.classList.add('open');
+      }
+    });
+  });
+
+  /* ---- Secciones colapsables ---- */
+  $$('.collapse-toggle').forEach(btn => {
+    const targetId = btn.getAttribute('data-target');
+    const body     = document.getElementById(targetId);
+
+    btn.addEventListener('click', () => {
+      const collapsed = btn.classList.toggle('collapsed');
+      body.classList.toggle('hidden', collapsed);
+    });
+  });
+
+  /* ---- Buscador interno ---- */
+  const searchInput   = $('search-input');
+  const searchResults = $('search-results');
+
+  // Construye índice de búsqueda desde las secciones
+  function buildIndex() {
+    const index = [];
+    sections.forEach(sec => {
+      const sectionTitle = sec.querySelector('h2')?.textContent || '';
+      const paras = sec.querySelectorAll('p, li');
+
+      paras.forEach(el => {
+        const text = el.textContent.trim();
+        if (text.length > 20) {
+          index.push({
+            section: sectionTitle,
+            sectionId: sec.id,
+            text: text.substring(0, 120) + (text.length > 120 ? '…' : '')
+          });
+        }
+      });
+    });
+    return index;
+  }
+
+  const searchIndex = buildIndex();
+
+  function escapeRegex(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  searchInput.addEventListener('input', () => {
+    const query = searchInput.value.trim();
+
+    if (query.length < 2) {
+      searchResults.style.display = 'none';
+      searchResults.innerHTML = '';
+      return;
+    }
+
+    const re = new RegExp(escapeRegex(query), 'gi');
+    const matches = searchIndex.filter(item =>
+      re.test(item.text) || re.test(item.section)
+    ).slice(0, 8);
+
+    if (matches.length === 0) {
+      searchResults.innerHTML = '<div class="search-item" style="color:var(--muted);">Sin resultados para esa búsqueda.</div>';
+      searchResults.style.display = 'block';
+      return;
+    }
+
+    searchResults.innerHTML = matches.map(m => {
+      const highlighted = m.text.replace(re, match => `<mark>${match}</mark>`);
+      return `<div class="search-item" data-id="${m.sectionId}">
+        <div class="si-section">${m.section}</div>
+        <div>${highlighted}</div>
+      </div>`;
+    }).join('');
+
+    searchResults.style.display = 'block';
+
+    // Click en resultado: navegar
+    searchResults.querySelectorAll('.search-item[data-id]').forEach(item => {
+      item.addEventListener('click', () => {
+        const target = document.getElementById(item.dataset.id);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        searchResults.style.display = 'none';
+        searchInput.value = '';
+      });
+    });
+  });
+
+  // Cierra resultados al hacer clic fuera
+  document.addEventListener('click', e => {
+    if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+      searchResults.style.display = 'none';
+    }
+  });
+
+  // Cierra resultados con Escape
+  searchInput.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      searchResults.style.display = 'none';
+      searchInput.value = '';
+    }
+  });
+
+  /* ---- Init ---- */
+  updateProgress();
+  updateBackTop();
+  highlightNav();
+</script>
+
+</body>
+</html>
